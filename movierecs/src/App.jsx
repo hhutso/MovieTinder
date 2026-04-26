@@ -48,6 +48,7 @@ function App() {
         <div className="card-container">
           <AnimatePresence>
             <motion.div
+              className="motion-div"
               key={temp_db[currentIndex].id}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
@@ -55,31 +56,13 @@ function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ x: info => (info > 0 ? 200 : -200), opacity: 0 }}
-              style={{
-                width: 300,
-                height: 520,
-                cursor: 'grab',
-                position: 'absolute',
-                left: 'calc(50% - 150px)',
-                borderRadius: '20px',
-                boxShadow: '0 10px 30px rgba(91, 91, 91, 0.4)',
-                backgroundColor: 'rgb(245, 227, 254)',
-              }}
             >
               <img
                 src={temp_db[currentIndex].poster}
                 alt="poster"
                 draggable="false"
-                style={{
-                  width: '90%',
-                  height: '90%',
-                  objectFit: 'cover',
-                  borderRadius: '20px',
-                  pointerEvents: 'none',
-                  marginTop: '10px',
-                }}
               />
-              <h2 style={{ textAlign: 'center' }}>{temp_db[currentIndex].title}</h2>
+              <h2>{temp_db[currentIndex].title}</h2>
             </motion.div>
           </AnimatePresence>
         </div>

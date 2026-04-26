@@ -14,7 +14,7 @@
   }
 }
 
-.card-container{
+.card-container {
   position: relative;
   width: 320px;
   height: 500px;
@@ -23,19 +23,36 @@
   align-items: center;
 
 }
-.motion-div {
-  background-color: black;
-}
 
-.card-container img{
-  width: 80%;
+
+.motion-div {
+  background-color: rgb(245, 227, 254);
+  width: 300px;
+  height: 520px;
+  cursor: grab;
+  position: absolute;
+  left: calc(50% - 150px);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(91, 91, 91, 0.4);  
+  container-type: inline-size;   
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.motion-div h2 {
+  text-align: 'center';
+  color: black;
+}
+.motion-div img {
+  width: 90%;
   height: 90%;
   object-fit: cover;
+  border-radius: 20px;
+  pointer-events: none;
+  margin-top: 10px;
 }
-.movie-card h2 {
-  margin: 10px;
-  padding: 50pxpx;
-}
+
 
 .counter {
   font-size: 16px;
