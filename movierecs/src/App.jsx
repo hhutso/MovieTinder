@@ -1,119 +1,97 @@
+// todo: npm install framer-motion
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { motion, AnimatePresence } from 'framer-motion'
+
+import minionPoster from './assets/Minionsandmonsters.jpg'
+import kpopdemonhunters from './assets/kpopdemonhunters.jpg'
+import goat from './assets/goatmovie.jpg'
+
 import './App.css'
+
+const temp_db = [
+  { id: 1, title: "Minions and Mosters", poster: minionPoster },
+  { id: 2, title: "Goat ", poster: goat },
+  { id: 3, title: "Kpop Demon Hunters", poster: kpopdemonhunters },
+]
 
 function App() {
   const [count, setCount] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleDrag = (event, info) => {
+    // right drag 
+    if (info.offset.x > 100) {
+      setCount(count + 1);
+      nextMovie();
+    }
+    // left drag 
+    else if (info.offset.x < -100) {
+      nextMovie();
+    }
+  }
+
+  const nextMovie = () => {
+    if (currentIndex < temp_db.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      alert("No more recommendations, come back later!");
+      setCurrentIndex(0);
+    }
+  };
+
+  const currentMovie = temp_db[currentIndex];
 
   return (
     <>
       <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
         <div>
-          <h1>Get started</h1>
+          <h1>Movie Tinder</h1>
           <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+            Start swiping left and right!
           </p>
         </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        {/* swipe feature here */}
+        <div className="card-container">
+          <AnimatePresence>
+            <motion.div
+              key={temp_db[currentIndex].id}
+              drag="x" // Enable horizontal dragging
+              dragConstraints={{ left: 0, right: 0 }} // Snap back if let go early
+              onDragEnd={handleDrag}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ x: info => info > 0 ? 200 : -200, opacity: 0 }} // Fly off screen
+              style={{
+                width: 300,
+                height: 520,
+                cursor: 'grab',
+                position: 'absolute',
+                left: 'calc(50% - 150px)',
+                borderRadius: '20px',
+                backgroundColor: 'black',
+                boxShadow: '0 10px 30px rgba(91, 91, 91, 0.4)',
+                backgroundColor:' rgb(245, 227, 254)',
+              }}
+            >
+            <img
+              src={temp_db[currentIndex].poster}
+              alt="poster"
+              draggable="false" // Prevents default browser image dragging
+              style={{ width: '90%', height: '90%', objectFit:'cover', borderRadius: '20px', pointerEvents: 'none', marginTop:'10px'}}
+            />
+            <h2 style={{ textAlign: 'center'}}>{temp_db[currentIndex].title}</h2>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <button className="counter">
+        Like movie count is {count}
+      </button>
+    </section >
+
+      {/* <section id="spacer"></section> */ }
     </>
   )
 }
