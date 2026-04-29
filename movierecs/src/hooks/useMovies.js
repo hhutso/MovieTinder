@@ -17,6 +17,9 @@ export function useMovies() {
               id: m.id,
               title: m.title,
               poster: `${IMAGE_BASE}${m.poster_path}`,
+              overview: m.overview,
+              rating: m.vote_average.toFixed(1),
+              year: m.release_date.slice(0,4),
             }))
         )
       })
