@@ -13,3 +13,9 @@ npm install
 npm run dev
 ```
 Runs at `http://localhost:5713`
+
+### Backend
+```bash
+cd server
+node index.js
+```
