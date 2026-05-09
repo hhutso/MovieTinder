@@ -4,6 +4,8 @@ import { useMovies } from './hooks/useMovies'
 import { saveSwipe } from './hooks/useSwipeHistory'
 import MovieCard from './components/MovieCard'
 import Profile from './components/Profile'
+//TENSORFLOW BELOW
+import { recommendMovies } from './utils/recommender'
 import './App.css'
 
 function App() {
@@ -11,6 +13,9 @@ function App() {
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
+  //TENSORFLOW BELOW
+  const [likedMovies, setLikedMovies] = useState([])
+  const [recommendedMovies, setRecommendedMovies] = useState([])
 
   if (temp_db.length === 0) return <p>Loading movies...</p>
 
@@ -18,7 +23,7 @@ function App() {
   if (showProfile) {
     return <Profile onBack={() => setShowProfile(false)} />
   }
-
+  /* KEEPING PREVIOUS CODE JUST IN CASE
   const handleDrag = (event, info) => {
     if (info.offset.x > 100) {
       setCount(count + 1)
@@ -26,6 +31,40 @@ function App() {
       nextMovie()
     } else if (info.offset.x < -100) {
       saveSwipe(temp_db[currentIndex], false)  // passed
+      nextMovie()
+    }
+  }
+    */
+
+  //UPDATED TENSORFLOW BELOW
+  const handleDrag = async (event, info) => {
+
+    if (info.offset.x > 100) {
+
+      const likedMovie = temp_db[currentIndex]
+
+      const updatedLikes = [
+        ...likedMovies,
+        likedMovie
+      ]
+
+      setLikedMovies(updatedLikes)
+
+      saveSwipe(likedMovie, true)
+
+      const recs = await recommendMovies(
+        updatedLikes,
+        temp_db
+      )
+
+      setRecommendedMovies(recs)
+
+      setCurrentIndex(0)
+
+    } else if (info.offset.x < -100) {
+
+      saveSwipe(temp_db[currentIndex], false)
+
       nextMovie()
     }
   }
