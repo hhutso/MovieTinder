@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import cors from 'cors'
 import dotenv from 'dotenv'
 
+//dotenv.config({path: '../movierecs/.env'})
 dotenv.config()
 
 const app = express()

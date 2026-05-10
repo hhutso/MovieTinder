@@ -4,6 +4,8 @@ import { useMovies } from './hooks/useMovies'
 import { saveSwipe, getSwipeHistory } from './hooks/useSwipeHistory'
 import MovieCard from './components/MovieCard'
 import Profile from './components/Profile'
+//TENSORFLOW BELOW
+import { recommendMovies } from './utils/recommender'
 import './App.css'
 
 function App() {
@@ -11,7 +13,9 @@ function App() {
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
-  const [seenIds, setSeenIds] = useState(null)  // null = not loaded yet
+  //TENSORFLOW BELOW
+  const [likedMovies, setLikedMovies] = useState([])
+  const [recommendedMovies, setRecommendedMovies] = useState([])
 
   useEffect(() => {
     getSwipeHistory().then(swipes => {
@@ -31,7 +35,7 @@ function App() {
   if (showProfile) {
     return <Profile onBack={() => setShowProfile(false)} />
   }
-
+  /* KEEPING PREVIOUS CODE JUST IN CASE
   const handleDrag = (event, info) => {
     if (info.offset.x > 100) {
       setCount(count + 1)
@@ -43,6 +47,34 @@ function App() {
       setSeenIds(prev => new Set(prev).add(temp_db[currentIndex].id))  // mark as seen immediately
       nextMovie()
     }
+  }
+    */
+
+  //UPDATED TENSORFLOW BELOW
+  const handleDrag = async (event, info) => {
+
+    if (info.offset.x > 100) {
+      await handleLike()
+
+    } else if (info.offset.x < -100) {
+      await handleSkip()
+    }
+  }
+
+  const handleLike = async () => {
+    const likedMovie = temp_db[currentIndex]
+    const updatedLikes = [...likedMovies, likedMovie]
+    setLikedMovies(updatedLikes)
+    setCount(count + 1)
+    saveSwipe(likedMovie, true)
+
+    const recs = await recommendMovies(updatedLikes, temp_db)
+    setRecommendedMovies(recs)
+    nextMovie()
+  }
+  const handleSkip = async () => {
+    saveSwipe(temp_db[currentIndex], false)
+    nextMovie()
   }
 
   const nextMovie = () => {
@@ -62,32 +94,28 @@ function App() {
           <p>Start swiping left and right!</p>
         </div>
 
-        <div className="card-container">
-          <AnimatePresence>
-            <MovieCard
-              key={temp_db[currentIndex].id}
-              movie={temp_db[currentIndex]}
-              onDragEnd={handleDrag}
-            />
-          </AnimatePresence>
+        <div className='cardAndButtons'>
+
+          <button className='likeButton' onClick={handleSkip}>✖</button>
+          <div className="card-container">
+            <AnimatePresence>
+              <MovieCard
+                key={temp_db[currentIndex].id}
+                movie={temp_db[currentIndex]}
+                onDragEnd={handleDrag}
+              />
+            </AnimatePresence>
+          </div>
+          <button className='likeButton' onClick={handleLike}>❤︎⁠</button>
         </div>
 
         <button className="counter">Like movie count is {count}</button>
 
         {/* Profile button */}
-        <button
+        <button className="profile"
           onClick={() => setShowProfile(true)}
-          style={{
-            marginTop: '16px',
-            padding: '10px 24px',
-            borderRadius: '20px',
-            border: 'none',
-            backgroundColor: 'rgb(220, 220, 220)',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
         >
-           View Liked Movies
+          View Liked Movies
         </button>
       </section>
     </>

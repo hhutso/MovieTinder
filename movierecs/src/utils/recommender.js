@@ -1,31 +1,143 @@
+import * as tf from '@tensorflow/tfjs'
 
-//OLD FUNCTION...DIDNT WORK AS WELL...
 /*
-import * as tf from '@tensorflow/tfjs'
+  Convert movie overview text into a simple word vector
+*/
 
-// Simple model
-export function scoreMovie(movie) {
-  // TEMPORARY!!!! fake score based on title length
-  return movie.title.length % 10
-} */
+function textToVector(text, vocabulary) {
+  const words = text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(' ')
 
-import * as tf from '@tensorflow/tfjs'
+  return vocabulary.map(word =>
+    words.includes(word) ? 1 : 0
+  )
+}
 
-export function rankMovies(movies, likedMovies) {
-  if (!likedMovies.length) return movies //if user hasnt liked anything yet ranking will continue as established
+/*
+  Build vocabulary from all movie overviews
+*/
 
-  // simple similarity PLACEHOLDER AND TEST FOR TF.JS
-  return movies.sort((a, b) => {
-    const scoreA = a.title.length
-    const scoreB = b.title.length
-    return scoreB - scoreA
+function buildVocabulary(movies, maxWords = 100) {
+  const freq = {}
+
+  movies.forEach(movie => {
+    const words = movie.overview
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(' ')
+
+    words.forEach(word => {
+      if (word.length < 4) return
+
+      freq[word] = (freq[word] || 0) + 1
+    })
   })
-  //sorts movies by length of movie title where longer titles come first
 
-   /* STEPS
-      User likes movies
-      likedMovies array grows
-      (rankMovies ignores it completely)
-      movies sorted by title length
-    */
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxWords)
+    .map(entry => entry[0])
+}
+
+/*
+  Convert movie into numerical vector
+*/
+
+export function movieToVector(movie, vocabulary) {
+  const textVector = textToVector(
+    movie.overview,
+    vocabulary
+  )
+
+  return [
+    movie.rating / 10,
+    (movie.year - 1980) / 50,
+    ...textVector,
+  ]
+}
+
+/*
+  Build user preference vector
+*/
+
+export function buildUserProfile(
+  likedMovies,
+  vocabulary
+) {
+  if (likedMovies.length === 0) return null
+
+  const vectors = likedMovies.map(movie =>
+    movieToVector(movie, vocabulary)
+  )
+
+  const tensor = tf.tensor2d(vectors)
+
+  return tensor.mean(0)
+}
+
+/*
+  Cosine similarity
+*/
+
+export function cosineSimilarity(a, b) {
+  return tf.tidy(() => {
+    const dot = tf.sum(tf.mul(a, b))
+
+    const normA = tf.norm(a)
+    const normB = tf.norm(b)
+
+    return dot.div(normA.mul(normB))
+  })
+}
+
+/*
+  Main recommendation function
+*/
+
+export async function recommendMovies(
+  likedMovies,
+  allMovies,
+  topK = 10
+) {
+  if (likedMovies.length === 0) {
+    return allMovies
+  }
+
+  const vocabulary = buildVocabulary(allMovies)
+
+  const profile = buildUserProfile(
+    likedMovies,
+    vocabulary
+  )
+
+  const scored = []
+
+  for (const movie of allMovies) {
+
+    // Skip already liked movies
+    if (likedMovies.find(m => m.id === movie.id)) {
+      continue
+    }
+
+    const movieTensor = tf.tensor1d(
+      movieToVector(movie, vocabulary)
+    )
+
+    const similarity =
+      await cosineSimilarity(profile, movieTensor)
+        .data()
+
+    scored.push({
+      movie,
+      score: similarity[0],
+    })
+  }
+
+  scored.sort((a, b) => b.score - a.score)
+
+  return scored
+    .slice(0, topK)
+    .map(s => s.movie)
 }
