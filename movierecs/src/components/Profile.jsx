@@ -50,7 +50,7 @@ const backButtonStyle = {
   padding: '10px 20px',
   borderRadius: '20px',
   border: 'none',
-  backgroundColor: 'rgb(220, 220, 220)',
+  backgroundColor: 'rgb(100, 100, 100)',
   cursor: 'pointer',
   fontSize: '14px',
 }
