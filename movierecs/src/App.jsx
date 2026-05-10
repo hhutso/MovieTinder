@@ -4,12 +4,17 @@ import { useMovies } from './hooks/useMovies'
 import { saveSwipe } from './hooks/useSwipeHistory'
 import MovieCard from './components/MovieCard'
 import Profile from './components/Profile'
+import FilterMenu from './components/FilterMenu'
 //TENSORFLOW BELOW
 import { recommendMovies } from './utils/recommender'
 import './App.css'
 
 function App() {
-  const temp_db = useMovies()
+  //FILTERING LOGIC
+  const [filters, setFilters] = useState({ rating: 0, runtime: 240 });
+  const [swipedIds, setSwipedIds] = useState(new Set());
+  //MAIN LOGIC
+  const { movies: temp_db, loading } = useMovies(filters, swipedIds);
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
@@ -17,7 +22,26 @@ function App() {
   const [likedMovies, setLikedMovies] = useState([])
   const [recommendedMovies, setRecommendedMovies] = useState([])
 
-  if (temp_db.length === 0) return <p>Loading movies...</p>
+  useEffect(() => {
+    fetch('http://localhost:5000/api/swipes')
+      .then(res => res.json())
+      .then(data => {
+        const likedOnly = data.filter(s => s.liked);
+        setCount(likedOnly.length); 
+        setLikedMovies(likedOnly); 
+        setSwipedIds(new Set(data.map(s => s.movieId)));
+      });
+  }, []);
+  
+
+  if (loading || !temp_db || temp_db.length === 0) {
+    return (
+      <section id="center">
+        <FilterMenu onFilterChange={setFilters} />
+        <p>Loading movies based on your filters...</p>
+      </section>
+    );
+  }
 
   // Show profile page
   if (showProfile) {
@@ -85,11 +109,12 @@ function App() {
       <section id="center">
         <div>
           <h1>Movie Tinder</h1>
+          <FilterMenu onFilterChange={setFilters} />
           <p>Start swiping left and right!</p>
         </div>
 
         <div className="card-container">
-          <AnimatePresence>
+          <AnimatePresence mode='wait'>
             <MovieCard
               key={temp_db[currentIndex].id}
               movie={temp_db[currentIndex]}
