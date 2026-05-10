@@ -40,33 +40,27 @@ function App() {
   const handleDrag = async (event, info) => {
 
     if (info.offset.x > 100) {
-
-      const likedMovie = temp_db[currentIndex]
-
-      const updatedLikes = [
-        ...likedMovies,
-        likedMovie
-      ]
-
-      setLikedMovies(updatedLikes)
-
-      saveSwipe(likedMovie, true)
-
-      const recs = await recommendMovies(
-        updatedLikes,
-        temp_db
-      )
-
-      setRecommendedMovies(recs)
-
-      setCurrentIndex(0)
+      await handleLike()
 
     } else if (info.offset.x < -100) {
-
-      saveSwipe(temp_db[currentIndex], false)
-
-      nextMovie()
+      await handleSkip()
     }
+  }
+
+  const handleLike = async () => {
+    const likedMovie = temp_db[currentIndex]
+    const updatedLikes = [...likedMovies, likedMovie]
+    setLikedMovies(updatedLikes)
+    setCount(count + 1)
+    saveSwipe(likedMovie, true)
+
+    const recs = await recommendMovies(updatedLikes, temp_db)
+    setRecommendedMovies(recs)
+    nextMovie()
+  }
+  const handleSkip = async () => {
+    saveSwipe(temp_db[currentIndex], false)
+    nextMovie()
   }
 
   const nextMovie = () => {
@@ -86,14 +80,19 @@ function App() {
           <p>Start swiping left and right!</p>
         </div>
 
-        <div className="card-container">
-          <AnimatePresence>
-            <MovieCard
-              key={temp_db[currentIndex].id}
-              movie={temp_db[currentIndex]}
-              onDragEnd={handleDrag}
-            />
-          </AnimatePresence>
+        <div className='cardAndButtons'>
+
+          <button className='likeButton' onClick={handleSkip}>✖</button>
+          <div className="card-container">
+            <AnimatePresence>
+              <MovieCard
+                key={temp_db[currentIndex].id}
+                movie={temp_db[currentIndex]}
+                onDragEnd={handleDrag}
+              />
+            </AnimatePresence>
+          </div>
+          <button className='likeButton' onClick={handleLike}>❤︎⁠</button>
         </div>
 
         <button className="counter">Like movie count is {count}</button>
@@ -111,7 +110,7 @@ function App() {
             fontSize: '14px',
           }}
         >
-           View Liked Movies
+          View Liked Movies
         </button>
       </section>
     </>
