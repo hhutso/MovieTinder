@@ -40,6 +40,14 @@
   &:active{
     color: rgba(171, 28, 28, 0.7);
   }
+.profile {
+  margin-top: 16px;
+  padding: 10px 24px;
+  border-radius: 20px;
+  border: none;
+  background-color: rgb(100, 100, 100);
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .motion-div {

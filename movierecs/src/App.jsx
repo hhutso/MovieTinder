@@ -98,17 +98,8 @@ function App() {
         <button className="counter">Like movie count is {count}</button>
 
         {/* Profile button */}
-        <button
+        <button className="profile"
           onClick={() => setShowProfile(true)}
-          style={{
-            marginTop: '16px',
-            padding: '10px 24px',
-            borderRadius: '20px',
-            border: 'none',
-            backgroundColor: 'rgb(220, 220, 220)',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
         >
           View Liked Movies
         </button>
