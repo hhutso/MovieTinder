@@ -1,4 +1,4 @@
-import { useState , useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useMovies } from './hooks/useMovies'
 import { saveSwipe, getSwipeHistory } from './hooks/useSwipeHistory'
@@ -11,10 +11,11 @@ import './App.css'
 
 function App() {
   //FILTERING LOGIC
-  const [filters, setFilters] = useState({ rating: 0, runtime: 240 });
-  const [swipedIds, setSwipedIds] = useState(null);
-  //MAIN LOGIC
-  const { movies: temp_db, loading } = useMovies(filters, swipedIds || new Set());
+  const [filters, setFilters] = useState({ rating: 0, runtime: 240 })
+  const [swipedIds, setSwipedIds] = useState(null)
+  //MAIN LOGIC — fetch all movies, then filter seen ones locally
+  const { movies: allMovies, loading } = useMovies(filters)
+  const temp_db = allMovies.filter(m => !swipedIds?.has(m.id))
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
@@ -27,75 +28,54 @@ function App() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          const likedOnly = data.filter(s => s.liked);
-          const allSwipedIds = new Set(data.map(s => s.movieId));
-          
-          setCount(likedOnly.length); 
-          setLikedMovies(likedOnly); 
-          setSwipedIds(allSwipedIds);
+          const likedOnly = data.filter(s => s.liked)
+          const allSwipedIds = new Set(data.map(s => s.movieId))
+          setCount(likedOnly.length)
+          setLikedMovies(likedOnly)
+          setSwipedIds(allSwipedIds)
         } else {
-          setSwipedIds(new Set());
+          setSwipedIds(new Set())
         }
       })
-      .catch(() => setSwipedIds(new Set()));
-  }, []);
+      .catch(() => setSwipedIds(new Set()))
+  }, [])
 
   useEffect(() => {
-    setCurrentIndex(0);
-  }, [temp_db]);
-  
+    setCurrentIndex(0)
+  }, [temp_db])
+
   const activeMovies =
-  recommendedMovies.length > 0
-    ? recommendedMovies
-    : temp_db
+    recommendedMovies.length > 0
+      ? recommendedMovies
+      : temp_db
 
   if (swipedIds === null || loading) {
     return (
       <section id="center">
-        <FilterMenu onFilterChange={setFilters} />
+        <FilterMenu onFilterChange={setFilters} initialFilters={filters} />
         <p>Loading movies...</p>
       </section>
-    );
+    )
   }
-  
 
   if (temp_db.length === 0) {
     return (
       <section id="center">
-        <FilterMenu onFilterChange={setFilters} />
+        <FilterMenu onFilterChange={setFilters} initialFilters={filters} />
         <p>You've seen all movies, come back later!</p>
       </section>
-    );
+    )
   }
-
-
- 
 
   // Show profile page
   if (showProfile) {
     return <Profile onBack={() => setShowProfile(false)} />
   }
-  /* KEEPING PREVIOUS CODE JUST IN CASE
-  const handleDrag = (event, info) => {
-    if (info.offset.x > 100) {
-      setCount(count + 1)
-      saveSwipe(temp_db[currentIndex], true)
-      setSeenIds(prev => new Set(prev).add(temp_db[currentIndex].id))  // mark as seen immediately
-      nextMovie()
-    } else if (info.offset.x < -100) {
-      saveSwipe(temp_db[currentIndex], false)
-      setSeenIds(prev => new Set(prev).add(temp_db[currentIndex].id))  // mark as seen immediately
-      nextMovie()
-    }
-  }
-    */
 
   //UPDATED TENSORFLOW BELOW
   const handleDrag = async (event, info) => {
-
     if (info.offset.x > 100) {
       await handleLike()
-
     } else if (info.offset.x < -100) {
       await handleSkip()
     }
@@ -113,15 +93,13 @@ function App() {
     setRecommendedMovies(recs)
     nextMovie()
   }
+
   const handleSkip = async () => {
     const skippedMovie = activeMovies[currentIndex]
     setSwipedIds(prev => new Set(prev).add(skippedMovie.id))
     saveSwipe(skippedMovie, false)
     nextMovie()
-    }
-  
-
-  
+  }
 
   const nextMovie = () => {
     if (currentIndex < activeMovies.length - 1) {
@@ -142,7 +120,6 @@ function App() {
         </div>
 
         <div className='cardAndButtons'>
-
           <button className='likeButton' onClick={handleSkip}>✖</button>
           <div className="card-container">
             <AnimatePresence mode='wait'>
@@ -159,9 +136,7 @@ function App() {
         <button className="counter">Like movie count is {count}</button>
 
         {/* Profile button */}
-        <button className="profile"
-          onClick={() => setShowProfile(true)}
-        >
+        <button className="profile" onClick={() => setShowProfile(true)}>
           View Liked Movies
         </button>
       </section>

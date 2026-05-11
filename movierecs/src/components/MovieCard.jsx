@@ -75,12 +75,12 @@ function MovieCard({ movie, onDragEnd }) {
               pointerEvents: 'none',
             }}
           />
-          <h2 style={{ margin: 0, fontSize: '16px' }}>{movie.title}</h2>
-          <p style={{ margin: 0, fontSize: '14px' }}>⭐ {movie.rating} &nbsp;·&nbsp; 📅 {movie.year}</p>
-          <p style={{ fontSize: '13px', lineHeight: 1.5, overflowY: 'auto', margin: 0 }}>
+          <h2 style={{ margin: 0, fontSize: '16px', color: '#FFFFFF' }}>{movie.title}</h2>
+          <p style={{ margin: 0, fontSize: '14px', color: '#FFFFFF' }}>⭐ {movie.rating} &nbsp;·&nbsp; 📅 {movie.year}</p>
+          <p style={{ fontSize: '13px', lineHeight: 1.5, overflowY: 'auto', margin: 0, color: '#FFFFFF' }}>
             {movie.overview}
           </p>
-          <p style={{ fontSize: '12px', color: '#888', marginTop: 'auto' }}>
+          <p style={{ fontSize: '12px', color: '#FFFF', marginTop: 'auto' }}>
             Click to flip back
           </p>
         </div>
