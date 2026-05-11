@@ -24,6 +24,34 @@
 
 }
 
+.cardAndButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-direction: row;
+}
+.likeButton{
+  width: auto; 
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 40px;
+  font-size: 100px;
+  color: rgb(43, 43, 43, .7);
+  background-color: transparent;
+  border-color: transparent;
+  cursor: pointer;
+  &:active{
+    color: rgba(171, 28, 28, 0.7);
+    transform: scale(0.9);
+  }
+  &:hover{
+    color: rgba(171, 28, 28, 0.7);
+  }
+}
+
 .profile {
   margin-top: 16px;
   padding: 10px 24px;
