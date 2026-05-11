@@ -17,8 +17,14 @@ function App() {
   //TENSORFLOW BELOW
   const [likedMovies, setLikedMovies] = useState([])
   const [recommendedMovies, setRecommendedMovies] = useState([])
-  const [seenIds, setSeenIds] = useState(null) 
-
+  const [seenIds, setSeenIds] = useState(null)
+  
+  /*
+  const activeMovies =
+    recommendedMovies.length > 0
+    ? recommendedMovies
+    : temp_db
+  */
 
   useEffect(() => {
     getSwipeHistory().then(swipes => {
@@ -27,17 +33,24 @@ function App() {
     })
   }, [])
 
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [recommendedMovies])
+
   // Wait for both movies and swipe history to load
   if (allMovies.length === 0 || seenIds === null) return <p>Loading movies...</p>
 
   const temp_db = allMovies.filter(m => !seenIds.has(m.id))
 
+  const activeMovies =
+    recommendedMovies.length > 0
+      ? recommendedMovies
+      : temp_db
+
+
   if (temp_db.length === 0) return <p>You've seen all movies, come back later!</p>
 
-  
-  useEffect(() => {
-    setCurrentIndex(0)
-  }, [recommendedMovies])
+
 
   // Show profile page
   if (showProfile) {
@@ -109,8 +122,8 @@ function App() {
           <div className="card-container">
             <AnimatePresence>
               <MovieCard
-                key={temp_db[currentIndex].id}
-                movie={temp_db[currentIndex]}
+                key={activeMovies[currentIndex].id}
+                movie={activeMovies[currentIndex]}
                 onDragEnd={handleDrag}
               />
             </AnimatePresence>

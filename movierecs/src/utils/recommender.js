@@ -139,6 +139,8 @@ export async function recommendMovies(
 
   scored.sort((a, b) => b.score - a.score)
 
+  profile.dispose()
+
   return scored
     .slice(0, topK)
     .map(s => s.movie)
