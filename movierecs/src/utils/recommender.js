@@ -1,5 +1,8 @@
 import * as tf from '@tensorflow/tfjs'
 
+
+let cachedVocabulary = null
+
 /*
   Convert movie overview text into a simple word vector
 */
@@ -67,7 +70,9 @@ export function buildUserProfile(
   likedMovies,
   vocabulary
 ) {
-  if (likedMovies.length === 0) return null
+  if (likedMovies.length === 0) {
+    return tf.zeros([1])
+  }
 
   const vectors = likedMovies.map(movie =>
     movieToVector(movie, vocabulary)
@@ -106,7 +111,11 @@ export async function recommendMovies(
     return allMovies
   }
 
-  const vocabulary = buildVocabulary(allMovies)
+  if (!cachedVocabulary) {
+    cachedVocabulary = buildVocabulary(allMovies)
+  }
+
+  const vocabulary = cachedVocabulary
 
   const profile = buildUserProfile(
     likedMovies,
@@ -126,10 +135,11 @@ export async function recommendMovies(
       movieToVector(movie, vocabulary)
     )
 
-    const similarity =
-      await cosineSimilarity(profile, movieTensor)
-        .data()
-        movieTensor.dispose()
+    const similarityTensor = await cosineSimilarity(profile, movieTensor)
+    const similarity = await similarityTensor.data()
+
+    movieTensor.dispose()
+    similarityTensor.dispose()
 
     scored.push({
       movie,
@@ -139,7 +149,7 @@ export async function recommendMovies(
 
   scored.sort((a, b) => b.score - a.score)
 
-  profile.dispose()
+  if (profile) profile.dispose()
 
   return scored
     .slice(0, topK)
