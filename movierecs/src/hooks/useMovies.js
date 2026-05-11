@@ -12,11 +12,19 @@ export function useMovies(filters, swipedIds) {
       setLoading(true);
       try {
         const query = new URLSearchParams(filters).toString();
-        const res = await fetch(`http://localhost:5000/api/movies/discover?${query}`);
-        const data = await res.json();
+        const pages = [1, 2, 3, 4, 5];
 
-        if (Array.isArray(data)) {
-          const processedMovies = data
+        const results = await Promise.all(
+          pages.map(page =>
+            fetch(`http://localhost:5000/api/movies/discover?${query}&page=${page}`)
+              .then(res => res.json())
+          )
+        );
+
+        const allFetchedMovies = results.flat();
+
+        if (Array.isArray(allFetchedMovies)) {
+          const processedMovies = allFetchedMovies
             .filter(m => m.poster_path)
             .filter(m => !swipedIds.has(m.id))
             .map(m => ({
@@ -25,10 +33,12 @@ export function useMovies(filters, swipedIds) {
               poster: `${IMAGE_BASE}${m.poster_path}`,
               overview: m.overview,
               rating: m.vote_average ? m.vote_average.toFixed(1) : "N/A",
-              year: m.release_date ? m.release_date.slice(0,4) : "Unknown",
+              year: m.release_date ? m.release_date.slice(0, 4) : "Unknown",
             }));
 
-          setMovies(processedMovies);
+          const uniqueMovies = Array.from(new Map(processedMovies.map(m => [m.id, m])).values());
+
+          setMovies(uniqueMovies);
         }
       } catch (err) {
         console.error("Fetch error:", err);
@@ -43,28 +53,3 @@ export function useMovies(filters, swipedIds) {
 
   return { movies, loading };
 }
-
-// export function useMovies() {
-//   const [movies, setMovies] = useState([])
-
-//   useEffect(() => {
-//     fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`)
-//       .then(res => res.json())
-//       .then(data => {
-//         setMovies(
-//           data.results
-//             .filter(m => m.poster_path)
-//             .map(m => ({
-//               id: m.id,
-//               title: m.title,
-//               poster: `${IMAGE_BASE}${m.poster_path}`,
-//               overview: m.overview,
-//               rating: m.vote_average.toFixed(1),
-//               year: m.release_date.slice(0,4),
-//             }))
-//         )
-//       })
-//   }, [])
-
-//   return movies
-// }

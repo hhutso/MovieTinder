@@ -22,7 +22,7 @@ const swipeSchema = new mongoose.Schema({
 })
 
 const Swipe = mongoose.model('Swipe', swipeSchema)
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY 
+const API_KEY = process.env.VITE_TMDB_API_KEY 
 
 app.post('/api/swipes', async (req, res) => {
   try {
@@ -45,7 +45,7 @@ app.get('/api/swipes', async (req, res) => {
 
 app.get('/api/movies/discover', async (req, res) => {
   try {
-    const { genre, rating, year, runtime } = req.query;
+    const { genre, rating, year, runtime , page } = req.query;
     
     let url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc`;
 
@@ -53,6 +53,7 @@ app.get('/api/movies/discover', async (req, res) => {
     if (rating && rating > 0) url += `&vote_average.gte=${rating}`;
     if (year) url += `&primary_release_year=${year}`;
     if (runtime) url += `&with_runtime.lte=${runtime}`;
+    if (page) url += `&page=${page}`;
 
     const response = await fetch(url);
     const data = await response.json();

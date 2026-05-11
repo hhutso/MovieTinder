@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState , useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useMovies } from './hooks/useMovies'
 import { saveSwipe } from './hooks/useSwipeHistory'
@@ -12,9 +12,9 @@ import './App.css'
 function App() {
   //FILTERING LOGIC
   const [filters, setFilters] = useState({ rating: 0, runtime: 240 });
-  const [swipedIds, setSwipedIds] = useState(new Set());
+  const [swipedIds, setSwipedIds] = useState(null);
   //MAIN LOGIC
-  const { movies: temp_db, loading } = useMovies(filters, swipedIds);
+  const { movies: temp_db, loading } = useMovies(filters, swipedIds || new Set());
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
@@ -26,19 +26,37 @@ function App() {
     fetch('http://localhost:5000/api/swipes')
       .then(res => res.json())
       .then(data => {
-        const likedOnly = data.filter(s => s.liked);
-        setCount(likedOnly.length); 
-        setLikedMovies(likedOnly); 
-        setSwipedIds(new Set(data.map(s => s.movieId)));
-      });
+        if (Array.isArray(data)) {
+          const likedOnly = data.filter(s => s.liked);
+          setCount(likedOnly.length); 
+          setLikedMovies(likedOnly); 
+          setSwipedIds(new Set(data.map(s => s.movieId)));
+        } else {
+          setSwipedIds(new Set());
+        }
+      })
+      .catch(() => setSwipedIds(new Set()));
   }, []);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [temp_db]);
   
 
-  if (loading || !temp_db || temp_db.length === 0) {
+  if (swipedIds === null || loading) {
     return (
       <section id="center">
         <FilterMenu onFilterChange={setFilters} />
-        <p>Loading movies based on your filters...</p>
+        <p>Loading movies...</p>
+      </section>
+    );
+  }
+
+  if (!temp_db || temp_db.length === 0) {
+    return (
+      <section id="center">
+        <FilterMenu onFilterChange={setFilters} />
+        <p>No movies found. Try adjusting your filters.</p>
       </section>
     );
   }
