@@ -18,7 +18,6 @@ function App() {
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
-  const [seenIds, setSeenIds] = useState(null)
   //TENSORFLOW BELOW
   const [likedMovies, setLikedMovies] = useState([])
   const [recommendedMovies, setRecommendedMovies] = useState([])
@@ -45,6 +44,10 @@ function App() {
     setCurrentIndex(0);
   }, [temp_db]);
   
+  const activeMovies =
+  recommendedMovies.length > 0
+    ? recommendedMovies
+    : temp_db
 
   if (swipedIds === null || loading) {
     return (
@@ -64,40 +67,9 @@ function App() {
       </section>
     );
   }
-  const [seenIds, setSeenIds] = useState(null)
-  
-  /*
-  const activeMovies =
-    recommendedMovies.length > 0
-    ? recommendedMovies
-    : temp_db
-  */
-
-  useEffect(() => {
-    getSwipeHistory().then(swipes => {
-      const ids = new Set(swipes.map(s => s.movieId))
-      setSeenIds(ids)
-    })
-  }, [])
-
-  useEffect(() => {
-    setCurrentIndex(0)
-  }, [recommendedMovies])
-
-  // Wait for both movies and swipe history to load
-  if (allMovies.length === 0 || seenIds === null) return <p>Loading movies...</p>
-
-  const temp_db = allMovies.filter(m => !seenIds.has(m.id))
-
-  const activeMovies =
-    recommendedMovies.length > 0
-      ? recommendedMovies
-      : temp_db
 
 
-  if (temp_db.length === 0) return <p>You've seen all movies, come back later!</p>
-
-
+ 
 
   // Show profile page
   if (showProfile) {
@@ -130,7 +102,7 @@ function App() {
   }
 
   const handleLike = async () => {
-    const likedMovie = temp_db[currentIndex]
+    const likedMovie = activeMovies[currentIndex]
     setSwipedIds(prev => new Set(prev).add(likedMovie.id))
     const updatedLikes = [...likedMovies, likedMovie]
     setLikedMovies(updatedLikes)
@@ -142,30 +114,14 @@ function App() {
     nextMovie()
   }
   const handleSkip = async () => {
-    const skippedMovie = temp_db[currentIndex]
+    const skippedMovie = activeMovies[currentIndex]
     setSwipedIds(prev => new Set(prev).add(skippedMovie.id))
     saveSwipe(skippedMovie, false)
     nextMovie()
-      await handleSkip()
     }
-  }
+  
 
-  const handleLike = async () => {
-    const likedMovie = activeMovies[currentIndex]
-    const updatedLikes = [...likedMovies, likedMovie]
-    setLikedMovies(updatedLikes)
-    setCount(count + 1)
-    saveSwipe(likedMovie, true)
-
-    const recs = await recommendMovies(updatedLikes, temp_db)
-    setRecommendedMovies(recs)
-    nextMovie()
-  }
-
-  const handleSkip = async () => {
-    saveSwipe(activeMovies[currentIndex], false)
-    nextMovie()
-  }
+  
 
   const nextMovie = () => {
     if (currentIndex < activeMovies.length - 1) {
@@ -191,8 +147,8 @@ function App() {
           <div className="card-container">
             <AnimatePresence mode='wait'>
               <MovieCard
-                key={activeMovies[currentIndex].id}
-                movie={activeMovies[currentIndex]}
+                key={activeMovies[currentIndex]?.id}
+                movie={activeMovies[currentIndex] || {}}
                 onDragEnd={handleDrag}
               />
             </AnimatePresence>
