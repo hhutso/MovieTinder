@@ -16,6 +16,7 @@ function App() {
   //TENSORFLOW BELOW
   const [likedMovies, setLikedMovies] = useState([])
   const [recommendedMovies, setRecommendedMovies] = useState([])
+  const [seenIds, setSeenIds] = useState(null) 
 
   useEffect(() => {
     getSwipeHistory().then(swipes => {
