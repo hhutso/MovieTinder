@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useMovies } from './hooks/useMovies'
-import { saveSwipe } from './hooks/useSwipeHistory'
+import { saveSwipe, getSwipeHistory } from './hooks/useSwipeHistory'
 import MovieCard from './components/MovieCard'
 import Profile from './components/Profile'
 //TENSORFLOW BELOW
@@ -9,15 +9,28 @@ import { recommendMovies } from './utils/recommender'
 import './App.css'
 
 function App() {
-  const temp_db = useMovies()
+  const allMovies = useMovies()
   const [count, setCount] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
   //TENSORFLOW BELOW
   const [likedMovies, setLikedMovies] = useState([])
   const [recommendedMovies, setRecommendedMovies] = useState([])
+  const [seenIds, setSeenIds] = useState(null) 
 
-  if (temp_db.length === 0) return <p>Loading movies...</p>
+  useEffect(() => {
+    getSwipeHistory().then(swipes => {
+      const ids = new Set(swipes.map(s => s.movieId))
+      setSeenIds(ids)
+    })
+  }, [])
+
+  // Wait for both movies and swipe history to load
+  if (allMovies.length === 0 || seenIds === null) return <p>Loading movies...</p>
+
+  const temp_db = allMovies.filter(m => !seenIds.has(m.id))
+
+  if (temp_db.length === 0) return <p>You've seen all movies, come back later!</p>
 
   // Show profile page
   if (showProfile) {
@@ -27,10 +40,12 @@ function App() {
   const handleDrag = (event, info) => {
     if (info.offset.x > 100) {
       setCount(count + 1)
-      saveSwipe(temp_db[currentIndex], true)   // liked
+      saveSwipe(temp_db[currentIndex], true)
+      setSeenIds(prev => new Set(prev).add(temp_db[currentIndex].id))  // mark as seen immediately
       nextMovie()
     } else if (info.offset.x < -100) {
-      saveSwipe(temp_db[currentIndex], false)  // passed
+      saveSwipe(temp_db[currentIndex], false)
+      setSeenIds(prev => new Set(prev).add(temp_db[currentIndex].id))  // mark as seen immediately
       nextMovie()
     }
   }
