@@ -4,10 +4,22 @@ export async function saveSwipe(movie, liked) {
   await fetch(`${API_URL}/swipes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    /*body: JSON.stringify({
+      movieId: movie.id,
+      title: movie.title,
+      poster: movie.poster,
+      liked,
+    }),
+    */
     body: JSON.stringify({
       movieId: movie.id,
       title: movie.title,
       poster: movie.poster,
+
+      overview: movie.overview,
+      rating: movie.rating,
+      year: movie.year,
+
       liked,
     }),
   })

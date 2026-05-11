@@ -1,3 +1,4 @@
+//import { useState } from 'react'
 import { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useMovies } from './hooks/useMovies'
@@ -18,6 +19,7 @@ function App() {
   const [recommendedMovies, setRecommendedMovies] = useState([])
   const [seenIds, setSeenIds] = useState(null) 
 
+
   useEffect(() => {
     getSwipeHistory().then(swipes => {
       const ids = new Set(swipes.map(s => s.movieId))
@@ -31,6 +33,11 @@ function App() {
   const temp_db = allMovies.filter(m => !seenIds.has(m.id))
 
   if (temp_db.length === 0) return <p>You've seen all movies, come back later!</p>
+
+  
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [recommendedMovies])
 
   // Show profile page
   if (showProfile) {
@@ -63,7 +70,7 @@ function App() {
   }
 
   const handleLike = async () => {
-    const likedMovie = temp_db[currentIndex]
+    const likedMovie = activeMovies[currentIndex]
     const updatedLikes = [...likedMovies, likedMovie]
     setLikedMovies(updatedLikes)
     setCount(count + 1)
@@ -73,13 +80,14 @@ function App() {
     setRecommendedMovies(recs)
     nextMovie()
   }
+
   const handleSkip = async () => {
-    saveSwipe(temp_db[currentIndex], false)
+    saveSwipe(activeMovies[currentIndex], false)
     nextMovie()
   }
 
   const nextMovie = () => {
-    if (currentIndex < temp_db.length - 1) {
+    if (currentIndex < activeMovies.length - 1) {
       setCurrentIndex(currentIndex + 1)
     } else {
       alert('No more recommendations, come back later!')

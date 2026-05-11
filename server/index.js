@@ -14,12 +14,30 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error(err))
 
-const swipeSchema = new mongoose.Schema({
+/*const swipeSchema = new mongoose.Schema({
   movieId:  Number,
   title:    String,
   poster:   String,
   liked:    Boolean,
   swipedAt: { type: Date, default: Date.now },
+})
+*/
+
+const swipeSchema = new mongoose.Schema({
+  movieId: Number,
+  title: String,
+  poster: String,
+
+  overview: String,
+  rating: Number,
+  year: Number,
+
+  liked: Boolean,
+
+  swipedAt: {
+    type: Date,
+    default: Date.now,
+  },
 })
 
 const Swipe = mongoose.model('Swipe', swipeSchema)

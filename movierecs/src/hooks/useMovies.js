@@ -7,6 +7,7 @@ export function useMovies() {
   const [movies, setMovies] = useState([])
 
   useEffect(() => {
+
     // Fetch pages 1-5 simultaneously
     const pages = [1, 2, 3, 4, 5]
 
@@ -25,12 +26,14 @@ export function useMovies() {
           title: m.title,
           poster: `${IMAGE_BASE}${m.poster_path}`,
           overview: m.overview,
+          //rating: m.vote_average.toFixed(1),
           rating: m.vote_average.toFixed(1),
           year: m.release_date.slice(0, 4),
         }))
 
       setMovies(allMovies)
     })
+
   }, [])
 
   return movies

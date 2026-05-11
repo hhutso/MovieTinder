@@ -19,7 +19,8 @@ function textToVector(text, vocabulary) {
   Build vocabulary from all movie overviews
 */
 
-function buildVocabulary(movies, maxWords = 100) {
+//function buildVocabulary(movies, maxWords = 100)
+export function buildVocabulary(movies, maxWords = 100) {
   const freq = {}
 
   movies.forEach(movie => {
@@ -128,6 +129,7 @@ export async function recommendMovies(
     const similarity =
       await cosineSimilarity(profile, movieTensor)
         .data()
+        movieTensor.dispose()
 
     scored.push({
       movie,
